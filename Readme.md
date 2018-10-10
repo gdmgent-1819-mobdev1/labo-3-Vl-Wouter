@@ -3,9 +3,10 @@
 ## Todo
 
 * [x] Add map
-* [ ] Get user coordinates
-* [ ] Store user coordinates in localstorage
-* [ ] Include Tinder v1 functionality
+* [x] Get user coordinates
+* [x] Store user coordinates in localstorage
+* [ ] Create circle around coordinates
+* [x] Include Tinder v1 functionality
 * [ ] Update styling
 * [ ] ...
 

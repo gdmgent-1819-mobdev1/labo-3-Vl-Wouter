@@ -72,7 +72,7 @@ function showProfile(key) {
         <img src='${profile.photo}' alt='${profile.name}' class='picture__fill'>
     </div>
     <div class='profile__info'>
-        <p class='profile__name'>${profile.name}</p> 
+        <p class='profile__name bold'>${profile.name}</p> 
         <p class='profile__age'>${profile.age}</p>
     </div>
     <div class='profile__info'>
@@ -111,6 +111,9 @@ function rate(rating) {
         center: [home.lng, home.lat],
         zoom: 9
     });
+    if(map.getLayer('locationbuffer')) {
+        map.removeLayer('locationbuffer');
+    }
 }
 
 // function to get users location
@@ -150,17 +153,41 @@ function flyMap(id) {
         center: [dest.lng, dest.lat],
         zoom: 9
     });
-    let areaBuffer = {
-        type: 'Feature',
-        geometry: {
-            type: 'Point',
-            coordinates: [dest.lng, dest.lat]
+    // let areaBuffer = {
+    //     type: 'Feature',
+    //     geometry: {
+    //         type: 'Point',
+    //         coordinates: [dest.lng, dest.lat]
+    //     },
+    //     properties: {
+    //         name: 'profileArea'
+    //     }
+    // };
+    // let fiveKmRadius = turf.buffer(areaBuffer, 5);
+    let mapid = 'location' + id;
+    let color = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`
+    map.addLayer({
+        'id': mapid,
+        'type': 'circle',
+        'source': {
+            'type': 'geojson',
+            'data': {
+                'type': 'Feature',
+                'geometry': {
+                    'type': 'Point',
+                    'coordinates': [dest.lng, dest.lat],
+                }
+            },
         },
-        properties: {
-            name: 'profileArea'
+        'paint': {
+            'circle-color': color,
+            'circle-radius': {
+                'base': 10,
+                'stops': [[9, 35], [12, 40], [22, 180]]
+            },
+            'circle-opacity': 0.5
         }
-    };
-    let fiveKmRadius = turf.buffer(areaBuffer, 5);
+    });
 }
 
 // Check if coordinates exist in localstorage

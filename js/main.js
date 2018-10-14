@@ -109,19 +109,6 @@ function showProfile(key) {
         </div>
         `;
     });
-    //// let dist = {
-    ////     type: 'Feature',
-    ////     properties: {},
-    ////     geometry: {
-    ////        type: 'LineString',
-    ////         coordinates: [
-    ////             [profile.coords.lng, profile.coords.lat],
-    ////             [home.lng, home.lat]
-    ////         ]
-    ////     }
-    //// };
-
-    //// let distance = turf.length(dist);
 }
 
 // function to check click count, adds profiles when click count is at profile limit?
@@ -193,17 +180,6 @@ function flyMap(id) {
         center: [dest.coords.lng, dest.coords.lat],
         zoom: 10
     });
-    // let areaBuffer = {
-    //     type: 'Feature',
-    //     geometry: {
-    //         type: 'Point',
-    //         coordinates: [dest.lng, dest.lat]
-    //     },
-    //     properties: {
-    //         name: 'profileArea'
-    //     }
-    // };
-    // let fiveKmRadius = turf.buffer(areaBuffer, 5);
     let mapid = 'location' + id;
     let color = `rgb(${Math.random()*255}, ${Math.random()*255}, ${Math.random()*255})`
     map.addLayer({

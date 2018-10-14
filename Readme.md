@@ -5,9 +5,11 @@
 * [x] Add map
 * [x] Get user coordinates
 * [x] Store user coordinates in localstorage
-* [ ] Create circle around coordinates
+* [x] Create circle around coordinates
 * [x] Include Tinder v1 functionality
-* [ ] Update styling
-* [ ] ...
+* [x] Update styling
+* [x] Circles disappear when switching profiles
+* [x] App has basic responsiveness
+* [x] Coordinates are based on address, with geocoding
 
 Labo 3 - MobDev-I

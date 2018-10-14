@@ -40,7 +40,7 @@ function createProfiles() {
         function (resolve, reject) {
             getData().then(response => {
                 response.results.forEach((res, i) => {
-                    let person = new Profile(res.name.first, res.dob.age, res.location.city, res.picture.large, res.location.coordinates.latitude, res.location.coordinates.longitude);
+                    let person = new Profile(res.name.first, res.dob.age, res.picture.large, res.location.street, res.location.city, res.location.coordinates.latitude, res.location.coordinates.longitude);
                     setLocal((i + profilecount), JSON.stringify(person));
                 });
                 resolve(null);
@@ -50,36 +50,78 @@ function createProfiles() {
     )
 }
 
+// turn the users address into coordinates
+function geoCode(string) {
+    return new Promise(
+        function (resolve, reject) {
+            let query = encodeURI(string);
+            let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${query}.json?limit=1&access_token=pk.eyJ1Ijoidmwtd291dGVyIiwiYSI6ImNqbjMzZmF3aTAwYmMza29jd3M1NXkycnAifQ.rnu6svUUZZiURmBMZzIjAQ`
+            fetch(url)
+            .then(response => {
+                data = response.json();
+                resolve(data);
+            }, error => reject(error));
+        }
+    );
+}
+
+/**
+ * Calculate distance between user and profile
+ * @param {*} key key to retrieve profile from localStorage
+ */
+function calcDistance(key, home) {
+    let dest = JSON.parse(getLocal(key));
+    let start = home;
+    let dist = {
+        type: 'Feature',
+        geometry: {
+            type: 'LineString',
+            coordinates: [
+                [dest.coords.lng, dest.coords.lat],
+                [start.lng, start.lat]
+            ]
+        }
+    };
+    let result = turf.length(dist);
+    return result;
+}
+
 // Show profile on screen
 function showProfile(key) {
     let profile = JSON.parse(getLocal(key));
     let home = JSON.parse(getLocal('coords_client'));
-    let dist = {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-            type: 'LineString',
-            coordinates: [
-                [profile.lng, profile.lat],
-                [home.lng, home.lat]
-            ]
-        }
-    };
+    geoCode(profile.address.addressString).then((data) => {
+        profile.coords.lat = data.features[0].center[1];
+        profile.coords.lng = data.features[0].center[0];
+        setLocal(key, JSON.stringify(profile));
+    }).then(() => {
+        document.getElementById('profilearea').innerHTML = `
+        <div class='profile__image'>
+            <img src='${profile.photo}' alt='${profile.name}' class='picture__fill'>
+        </div>
+        <div class='profile__info'>
+            <p class='profile__name bold'>${profile.name}</p> 
+            <p class='profile__age'>${profile.age}</p>
+        </div>
+        <div class='profile__info'>
+            <p class='profile__home'>${profile.address.city}</p>
+            <p class='profile__dist'>${parseInt(calcDistance(key, home))}km</p>
+        </div>
+        `;
+    });
+    //// let dist = {
+    ////     type: 'Feature',
+    ////     properties: {},
+    ////     geometry: {
+    ////        type: 'LineString',
+    ////         coordinates: [
+    ////             [profile.coords.lng, profile.coords.lat],
+    ////             [home.lng, home.lat]
+    ////         ]
+    ////     }
+    //// };
 
-    let distance = turf.length(dist);
-    document.getElementById('profilearea').innerHTML = `
-    <div class='profile__image'>
-        <img src='${profile.photo}' alt='${profile.name}' class='picture__fill'>
-    </div>
-    <div class='profile__info'>
-        <p class='profile__name bold'>${profile.name}</p> 
-        <p class='profile__age'>${profile.age}</p>
-    </div>
-    <div class='profile__info'>
-        <p class='profile__home'>${profile.city}</p>
-        <p class='profile__dist'>${parseInt(distance)}km</p>
-    </div>
-    `;
+    //// let distance = turf.length(dist);
 }
 
 // function to check click count, adds profiles when click count is at profile limit?
@@ -103,6 +145,7 @@ function rate(rating) {
     let current = JSON.parse(getLocal(profilecount));
     rating === 'like' ? current.liked = 1 : current.liked = -1;
     setLocal(profilecount, JSON.stringify(current));
+    map.removeLayer('location' + profilecount);
     profilecount++;
     setLocal('profilecount', profilecount);
     checkClick();
@@ -111,9 +154,6 @@ function rate(rating) {
         center: [home.lng, home.lat],
         zoom: 9
     });
-    if(map.getLayer('locationbuffer')) {
-        map.removeLayer('locationbuffer');
-    }
 }
 
 // function to get users location
@@ -123,7 +163,6 @@ function getLocation() {
             let coords = {lat: 0, lng: 0};
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
-                    console.log(position);
                     coords.lat = position.coords.latitude;
                     coords.lng = position.coords.longitude;
                     resolve(coords);
@@ -144,14 +183,15 @@ function initMap(lat, lng) {
         zoom: 10,
         center: [lng, lat]
     });
+    
 }
 
 // move to show profile area
 function flyMap(id) {
     let dest = JSON.parse(getLocal(id));
     map.flyTo({
-        center: [dest.lng, dest.lat],
-        zoom: 9
+        center: [dest.coords.lng, dest.coords.lat],
+        zoom: 10
     });
     // let areaBuffer = {
     //     type: 'Feature',
@@ -175,7 +215,7 @@ function flyMap(id) {
                 'type': 'Feature',
                 'geometry': {
                     'type': 'Point',
-                    'coordinates': [dest.lng, dest.lat],
+                    'coordinates': [dest.coords.lng, dest.coords.lat],
                 }
             },
         },

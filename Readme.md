@@ -13,3 +13,5 @@
 * [x] Coordinates are based on address, with geocoding
 
 Labo 3 - MobDev-I
+
+Comments in code maken gebruik van [Better Comments](https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments)

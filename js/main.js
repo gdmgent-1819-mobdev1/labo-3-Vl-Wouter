@@ -139,7 +139,7 @@ function rate(rating) {
     let home = JSON.parse(getLocal('coords_client'));
     map.flyTo({
         center: [home.lng, home.lat],
-        zoom: 9
+        zoom: 10
     });
 }
 
